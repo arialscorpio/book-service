@@ -4,20 +4,28 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+
+	"github.com/arialscorpio/ms-lib/logger"
+	"github.com/arialscorpio/ms-lib/logger/log/field"
 )
 
 type BookController struct {
-	store *Store
+	store  *Store
+	logger logger.Logger
 }
 
-func NewBookController(s *Store) *BookController {
-	return &BookController{s}
+func NewBookController(s *Store, l logger.Logger) *BookController {
+	return &BookController{
+		store:  s,
+		logger: l,
+	}
 }
 
 func (c *BookController) List(w http.ResponseWriter, r *http.Request) {
 	books := c.store.GetAll()
 	res, err := json.Marshal(books)
 	if err != nil {
+		c.logger.Error(err, field.Str("message", "json marshal error"))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

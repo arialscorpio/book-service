@@ -4,9 +4,13 @@ import (
 	"net/http"
 
 	"github.com/arialscorpio/book-service/app"
+	"github.com/arialscorpio/ms-lib/logger"
 )
 
+type Middleware func(http.Handler) http.Handler
+
 func main() {
+	logger := logger.New()
 	b := app.Book{
 		Name:      "TBook",
 		Author:    "Jon Doe",
@@ -17,7 +21,7 @@ func main() {
 	store := app.NewStore()
 	store.Add(b)
 
-	controller := app.NewBookController(&store)
+	controller := app.NewBookController(&store, logger)
 
 	router := http.NewServeMux()
 
@@ -26,5 +30,7 @@ func main() {
 	router.HandleFunc("/update", controller.Update)
 	router.HandleFunc("/delete", controller.Delete)
 
-	_ = http.ListenAndServe(":8088", router)
+	addr := ":8088"
+	logger.Info("starting server on " + addr)
+	_ = http.ListenAndServe(addr, router)
 }
